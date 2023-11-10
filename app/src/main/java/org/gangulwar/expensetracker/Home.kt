@@ -39,18 +39,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.modifier.modifierLocalMapOf
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
+import org.gangulwar.expensetracker.BottomNavItem.Home.name
 import org.gangulwar.expensetracker.ui.theme.ExpenseTrackerTheme
 
 
@@ -67,7 +72,67 @@ fun BottomNavigationScreen(navController: NavController) {
 
     var selected by remember { mutableStateOf(0) }
 
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(
+
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+
+        topBar = {
+//            CenterAlignedTopAppBar(
+//                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+//                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+//                    titleContentColor = MaterialTheme.colorScheme.primary,
+//                ), title = {
+//                    Text(text = "")
+//
+//                }
+//            )
+            LargeTopAppBar(
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = colorResource(id = R.color.main_bg),
+                    titleContentColor = Color.White,
+                ),
+                title = {
+                    Column() {
+                        Text(
+                            text = "Good Morning", style = TextStyle(
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontFamily = interFamily,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+
+
+                        Text(
+                            modifier = Modifier.padding(top = 15.dp),
+                            text = "Aarsh Gangulwar", style = TextStyle(
+                                color = Color.White,
+                                fontSize = 25.sp,
+                                fontFamily = interFamily,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                    }
+
+                }, actions = {
+                    Image(
+                        modifier = Modifier
+//                            .background(
+//                                color = Color.Black,
+//                                shape = CircleShape
+//                            )
+                            .clip(CircleShape)
+                            .size(50.dp),
+                        painter = painterResource(R.drawable.user_image),
+                        contentDescription = null
+                    )
+                }
+            )
+        },
         bottomBar = {
             BottomNavigation(
 //                modifier = Modifier.fillMaxWidth().height(117.dp)
@@ -97,7 +162,7 @@ fun BottomNavigationScreen(navController: NavController) {
                             navController.navigate(item.route)
                         }, label = {
                             Text(
-                                text = item.title, style = TextStyle(
+                                text = item.name, style = TextStyle(
                                     color = Color.White
                                 )
                             )
@@ -157,7 +222,7 @@ fun BottomNavigationScreen(navController: NavController) {
 
 sealed class BottomNavItem(
     val route: String,
-    val title: String,
+    val name: String,
     val icon: Int,
     val selectedIcon: Int
 ) {
