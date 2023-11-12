@@ -1,5 +1,8 @@
 package org.gangulwar.expensetracker
 
+import android.os.Build
+import android.widget.ToggleButton
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.modifier.modifierLocalMapOf
@@ -56,9 +61,14 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import org.gangulwar.expensetracker.BottomNavItem.Home.name
+import org.gangulwar.expensetracker.modal.TransactionModal
 import org.gangulwar.expensetracker.ui.theme.ExpenseTrackerTheme
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavigationScreen(navController: NavController) {
@@ -102,13 +112,13 @@ fun BottomNavigationScreen(navController: NavController) {
                                 color = Color.White,
                                 fontSize = 15.sp,
                                 fontFamily = interFamily,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Medium
                             )
                         )
 
 
                         Text(
-                            modifier = Modifier.padding(top = 15.dp),
+                            modifier = Modifier.padding(top = 5.dp),
                             text = "Aarsh Gangulwar", style = TextStyle(
                                 color = Color.White,
                                 fontSize = 25.sp,
@@ -245,9 +255,222 @@ sealed class BottomNavItem(
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen() {
-    TextView(name = "Home Screen")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorResource(R.color.main_bg))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+
+        ) {
+            Image(
+                modifier = Modifier.fillMaxWidth(),
+                painter = painterResource(R.drawable.bg_lines),
+                contentDescription = null,
+                contentScale = ContentScale.FillWidth
+            )
+        }
+
+        var isIncomeChecked by remember {
+            mutableStateOf(true)
+        }
+
+        Card(
+            modifier = Modifier
+                .fillMaxSize(),
+            shape = RoundedCornerShape(topStart = 35.dp, topEnd = 35.dp)
+        ) {
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = Color(192, 192, 192, 255)
+                    )
+                    .padding(top = 10.dp, start = 15.dp, end = 15.dp)
+            ) {
+//                ToggleButton(isIncomeChecked) { updateValue ->
+//                    isIncomeChecked = updateValue
+//                }
+
+
+                ToggleButton(isIncomeChecked) { updateValue ->
+                    isIncomeChecked = updateValue
+                }
+
+                Text(
+                    modifier = Modifier.padding(top = 10.dp),
+                    text = "Recents", style = TextStyle(
+                        fontFamily = interFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 35.sp,
+                        color = Color.Black
+                    )
+                )
+
+                val list = ApiRepository.getRecentsIncomeList()
+                LazyColumn {
+                    items(list) { transaction ->
+                        TransactionItem(transaction = transaction)
+                    }
+                }
+            }
+//            Box(modifier = Modifier.)
+
+        }
+    }
+}
+//Transaction Modal
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun TransactionItem(transaction: TransactionModal) {
+    val category = transaction.category
+    val description = transaction.description
+    val dateTime = formatDateTime(transaction.dateTime)
+    val amount = transaction.amount
+    var image: Painter? = null
+    if (category == "Transportation") {
+        image = painterResource(id = R.drawable.transportation)
+    } else if (category == "Food") {
+        image = painterResource(id = R.drawable.food)
+    } else if (category == "Health") {
+        image = painterResource(id = R.drawable.health_and_wellness)
+    } else if (category == "Grocery") {
+        image = painterResource(id = R.drawable.grocery)
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (image != null) {
+            Image(
+                modifier = Modifier.size(50.dp),
+                painter = image, contentDescription = null
+            )
+        }
+        Column(modifier = Modifier.padding(start = 10.dp)) {
+            Text(
+                text = category, style = TextStyle(
+                    fontFamily = interFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 20.sp
+                )
+            )
+
+            Text(
+                text = dateTime, style = TextStyle(
+                    fontFamily = interFamily,
+                    fontWeight = FontWeight.Light,
+                    fontSize = 15.sp
+                )
+            )
+
+            Text(
+                text = description, style = TextStyle(
+                    fontFamily = interFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 13.sp
+                )
+            )
+        }
+        Text(
+            text = amount.toString(), style = TextStyle(
+                fontFamily = interFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 25.sp
+            )
+        )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun formatDateTime(dateTime: LocalDateTime): String {
+    val now = LocalDateTime.now()
+    val formatter = DateTimeFormatter.ofPattern("HH:mm")
+
+    return when {
+        dateTime.toLocalDate().isEqual(now.toLocalDate()) -> "Today, ${dateTime.format(formatter)}"
+        dateTime.toLocalDate()
+            .isEqual(now.toLocalDate().minus(1, ChronoUnit.DAYS)) -> "Yesterday, ${
+            dateTime.format(
+                formatter
+            )
+        }"
+
+        else -> dateTime.format(DateTimeFormatter.ofPattern("MMM d, HH:mm"))
+    }
+}
+
+@Composable
+fun ToggleButton(isIncomeChecked: Boolean, isChecked: (Boolean) -> Unit) {
+
+//    var isIncomeChecked by remember {
+//        mutableStateOf(true)
+//    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp),
+        horizontalArrangement = Arrangement.Center
+
+    ) {
+
+        Button(
+
+            onClick = { isChecked(true) },
+            shape = RoundedCornerShape(
+                topStart = 25.dp,
+                bottomStart = 25.dp
+            ),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isIncomeChecked) Color.Black else Color.White
+            )
+        ) {
+            Text(
+                //modifier = Modifier.background(),
+
+                text = "Income", style = TextStyle(
+                    fontFamily = interFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 25.sp,
+                    color = if (isIncomeChecked) Color.White else Color.Black
+                )
+            )
+        }
+
+        Button(
+
+            onClick = { isChecked(false) },
+            shape = RoundedCornerShape(
+                topEnd = 25.dp,
+                bottomEnd = 25.dp
+            ),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isIncomeChecked) Color.White else Color.Black
+            )
+        ) {
+            Text(
+                //modifier = Modifier.background(),
+
+                text = "Expense", style = TextStyle(
+                    fontFamily = interFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 25.sp,
+                    color = if (isIncomeChecked) Color.Black else Color.White
+                )
+            )
+        }
+    }
 }
 
 @Composable
@@ -286,19 +509,22 @@ fun TextView(name: String) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Main() {
     val navController = rememberNavController()
     BottomNavigationScreen(navController)
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(
     showBackground = true, showSystemUi = true, name = "Home Screen"
 )
 @Composable
 fun GreePreview() {
     ExpenseTrackerTheme {
-        Main()
+        //Main()
 //        SimpleBottomAppBar()
+        HomeScreen()
     }
 }
