@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -43,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -63,6 +65,7 @@ import androidx.navigation.compose.*
 import org.gangulwar.expensetracker.BottomNavItem.Home.name
 import org.gangulwar.expensetracker.modal.TransactionModal
 import org.gangulwar.expensetracker.ui.theme.ExpenseTrackerTheme
+import java.nio.file.WatchEvent
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -100,13 +103,19 @@ fun BottomNavigationScreen(navController: NavController) {
 //
 //                }
 //            )
-            LargeTopAppBar(
+            TopAppBar(
+                modifier = Modifier.height(100.dp),
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
                     containerColor = colorResource(id = R.color.main_bg),
-                    titleContentColor = Color.White,
+                    titleContentColor = Color.Transparent,
                 ),
                 title = {
-                    Column() {
+                    Column(
+                        Modifier
+                            .fillMaxHeight()
+                            .padding(start = 20.dp, top = 10.dp),
+                        verticalArrangement = Arrangement.Center
+                    ) {
                         Text(
                             text = "Good Morning", style = TextStyle(
                                 color = Color.White,
@@ -115,14 +124,12 @@ fun BottomNavigationScreen(navController: NavController) {
                                 fontWeight = FontWeight.Medium
                             )
                         )
-
-
                         Text(
                             modifier = Modifier.padding(top = 5.dp),
                             text = "Aarsh Gangulwar", style = TextStyle(
                                 color = Color.White,
                                 fontSize = 25.sp,
-                                fontFamily = interFamily,
+                                fontFamily = jostFamily,
                                 fontWeight = FontWeight.SemiBold
                             )
                         )
@@ -131,14 +138,19 @@ fun BottomNavigationScreen(navController: NavController) {
                 }, actions = {
                     Image(
                         modifier = Modifier
+                            .fillMaxHeight()
+                            .padding(end = 10.dp)
+//
 //                            .background(
-//                                color = Color.Black,
+//                                color = Color.White,
 //                                shape = CircleShape
 //                            )
                             .clip(CircleShape)
-                            .size(50.dp),
-                        painter = painterResource(R.drawable.user_image),
-                        contentDescription = null
+                            .size(50.dp)
+                            .align(Alignment.CenterVertically),
+                        painter = painterResource(R.drawable.demo_user),
+                        contentDescription = null,
+//                        contentScale = ContentScale.FillBounds
                     )
                 }
             )
@@ -149,9 +161,12 @@ fun BottomNavigationScreen(navController: NavController) {
 //                    .background(color = Color.White, shape = RoundedCornerShape(15.dp))
                 backgroundColor = Color(30, 30, 30),
                 modifier = Modifier
+                    .background(colorResource(id = R.color.card), RoundedCornerShape(0.dp))
                     .padding(5.dp)
                     .height(75.dp)
+//                    .clip(RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp))
                     .clip(RoundedCornerShape(15.dp))
+
             ) {
                 items.forEachIndexed { index, item ->
                     val isSelected = index == selected
@@ -266,6 +281,7 @@ fun HomeScreen() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(0.75f)
 
         ) {
             Image(
@@ -274,6 +290,34 @@ fun HomeScreen() {
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth
             )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 25.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
+
+                Text(
+                    text = "Budget Balance",
+                    style = TextStyle(
+                        color = Color.White,
+                        fontFamily = interFamily,
+                        fontWeight = FontWeight.Light,
+                        fontSize = 15.sp
+                    )
+                )
+                val amount = 5000
+                Text(
+                    text = "₹${amount}",
+                    style = TextStyle(
+                        color = Color.White,
+                        fontFamily = interFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 55.sp
+                    )
+                )
+            }
         }
 
         var isIncomeChecked by remember {
@@ -282,7 +326,9 @@ fun HomeScreen() {
 
         Card(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .weight(2f),
+//                .verticalScroll(rememberScrollState()),
             shape = RoundedCornerShape(topStart = 35.dp, topEnd = 35.dp)
         ) {
 
@@ -290,18 +336,22 @@ fun HomeScreen() {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        color = Color(192, 192, 192, 255)
+//                        color = Color(192, 192, 192, 255)
+                        colorResource(id = R.color.card)
                     )
                     .padding(top = 10.dp, start = 15.dp, end = 15.dp)
-            ) {
+            )
+            {
 //                ToggleButton(isIncomeChecked) { updateValue ->
 //                    isIncomeChecked = updateValue
 //                }
 
 
-                ToggleButton(isIncomeChecked) { updateValue ->
-                    isIncomeChecked = updateValue
-                }
+                CustomToggleButton(isIncomeChecked = isIncomeChecked,
+                    isChecked = {
+                        isIncomeChecked = it
+                    }
+                )
 
                 Text(
                     modifier = Modifier.padding(top = 10.dp),
@@ -314,7 +364,12 @@ fun HomeScreen() {
                 )
 
                 val list = ApiRepository.getRecentsIncomeList()
-                LazyColumn {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),  // Occupy remaining space
+                    contentPadding = PaddingValues(bottom = 16.dp)  // Add some bottom padding
+                ) {
                     items(list) { transaction ->
                         TransactionItem(transaction = transaction)
                     }
@@ -348,16 +403,24 @@ fun TransactionItem(transaction: TransactionModal) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 10.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically
+            .padding(top = 15.dp),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         if (image != null) {
             Image(
-                modifier = Modifier.size(50.dp),
-                painter = image, contentDescription = null
-            )
+                modifier = Modifier
+                    .size(50.dp)
+                    .weight(0.75f),
+                painter = image, contentDescription = null,
+
+                )
         }
-        Column(modifier = Modifier.padding(start = 10.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(start = 10.dp)
+                .weight(2f)
+        ) {
             Text(
                 text = category, style = TextStyle(
                     fontFamily = interFamily,
@@ -383,7 +446,8 @@ fun TransactionItem(transaction: TransactionModal) {
             )
         }
         Text(
-            text = amount.toString(), style = TextStyle(
+            modifier = Modifier.weight(1f),
+            text = "₹ ${amount.toString()}", style = TextStyle(
                 fontFamily = interFamily,
                 fontWeight = FontWeight.Medium,
                 fontSize = 25.sp
@@ -411,7 +475,11 @@ fun formatDateTime(dateTime: LocalDateTime): String {
 }
 
 @Composable
-fun ToggleButton(isIncomeChecked: Boolean, isChecked: (Boolean) -> Unit) {
+fun CustomToggleButton(
+    isIncomeChecked: Boolean,
+    isChecked: (Boolean) -> Unit,
+    wantRed: Boolean = false
+) {
 
 //    var isIncomeChecked by remember {
 //        mutableStateOf(true)
@@ -433,7 +501,20 @@ fun ToggleButton(isIncomeChecked: Boolean, isChecked: (Boolean) -> Unit) {
                 bottomStart = 25.dp
             ),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isIncomeChecked) Color.Black else Color.White
+                containerColor =
+                if (wantRed) {
+                    if (isIncomeChecked) {
+                        colorResource(id = R.color.checked_green)
+                    } else {
+                        Color.Black
+                    }
+                } else {
+                    if (isIncomeChecked) {
+                        Color.Black
+                    } else {
+                        Color.White
+                    }
+                }
             )
         ) {
             Text(
@@ -443,7 +524,17 @@ fun ToggleButton(isIncomeChecked: Boolean, isChecked: (Boolean) -> Unit) {
                     fontFamily = interFamily,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 25.sp,
-                    color = if (isIncomeChecked) Color.White else Color.Black
+                    color =
+                    if (wantRed) {
+                        Color.White
+                    } else {
+                        if (isIncomeChecked) {
+                            Color.Black
+                        } else {
+                            Color.White
+                        }
+                    }
+
                 )
             )
         }
@@ -456,7 +547,20 @@ fun ToggleButton(isIncomeChecked: Boolean, isChecked: (Boolean) -> Unit) {
                 bottomEnd = 25.dp
             ),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isIncomeChecked) Color.White else Color.Black
+                containerColor =
+                if (wantRed) {
+                    if (isIncomeChecked) {
+                        Color.Black
+                    } else {
+                        colorResource(id = R.color.checked_red)
+                    }
+                } else {
+                    if (isIncomeChecked) {
+                        Color.Black
+                    } else {
+                        Color.White
+                    }
+                }
             )
         ) {
             Text(
@@ -466,16 +570,69 @@ fun ToggleButton(isIncomeChecked: Boolean, isChecked: (Boolean) -> Unit) {
                     fontFamily = interFamily,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 25.sp,
-                    color = if (isIncomeChecked) Color.Black else Color.White
+                    color =
+                    if (wantRed) {
+                        Color.White
+                    } else {
+                        if (isIncomeChecked) {
+                            Color.Black
+                        } else {
+                            Color.White
+                        }
+                    }
                 )
             )
         }
     }
 }
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ListScreen() {
-    TextView(name = "List Screen")
+
+    var isChecked by remember {
+        mutableStateOf(true)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                color = colorResource(id = R.color.card)
+            )
+            .padding(top = 15.dp, start = 15.dp)
+    ) {
+        Column() {
+            Text(
+                text = "All Transactions ", style =
+                TextStyle(
+                    fontFamily = interFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 35.sp,
+                    color = Color.Black
+                )
+            )
+            CustomToggleButton(
+                isIncomeChecked = isChecked, isChecked = {
+                    isChecked = it
+                }, wantRed = true
+            )
+
+            var list: List<TransactionModal>? = null
+            if (isChecked) {
+                list = ApiRepository.getIncomeList()
+            } else {
+                list = ApiRepository.getExpenseList()
+            }
+
+            LazyColumn() {
+                items(list) { transaction ->
+                    TransactionItem(transaction = transaction)
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -488,9 +645,111 @@ fun ProfileScreen() {
     TextView(name = "Profile Screen")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewExpenseScreen() {
-    TextView(name = "New Expense")
+
+    var amount by remember {
+        mutableStateOf("Enter Amount")
+    }
+
+    var description by remember {
+        mutableStateOf("Enter Description")
+    }
+
+    var incomeSeleted by remember {
+        mutableStateOf(true)
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            Text(
+//                modifier = Modifier.fillMaxWidth(),
+                text = "New Expense", style =
+                TextStyle(
+                    fontFamily = interFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 35.sp,
+                    color = Color.Black
+                )
+            )
+
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(5.dp)
+                    .background(Color.Black)
+            )
+
+            Row(
+                modifier = Modifier.padding(15.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.rupee_icon),
+                    contentDescription = null
+                )
+
+                TextField(
+                    modifier = Modifier.padding(start = 10.dp),
+                    value = "Enter Amount",
+                    onValueChange = {
+                        amount = it
+                    },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Black
+                    ),
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontFamily = interFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 25.sp
+                    )
+                )
+            }
+
+            Row(
+                modifier = Modifier.padding(15.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.description_icon),
+                    contentDescription = null
+                )
+
+                TextField(
+                    modifier = Modifier.padding(start = 10.dp),
+                    value = "Enter a description",
+                    onValueChange = {
+                        description = it
+                    },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Black
+                    ),
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontFamily = interFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp
+                    )
+                )
+            }
+
+            CustomToggleButton(
+                isIncomeChecked = incomeSeleted,
+                isChecked = {
+                    incomeSeleted = it
+                },
+                wantRed = true
+            )
+        }
+    }
 }
 
 @Composable
@@ -525,6 +784,8 @@ fun GreePreview() {
     ExpenseTrackerTheme {
         //Main()
 //        SimpleBottomAppBar()
-        HomeScreen()
+        //HomeScreen()
+        // ListScreen()
+        NewExpenseScreen()
     }
 }

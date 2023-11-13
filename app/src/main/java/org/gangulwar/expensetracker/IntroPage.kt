@@ -37,9 +37,12 @@ val interFamily = FontFamily(
     Font(R.font.inter_extrabold, FontWeight.ExtraBold)
 )
 
+val jostFamily = FontFamily(
+    Font(R.font.jost_semibold, FontWeight.SemiBold)
+)
+
 @Composable
 fun IntroPage() {
-
 
 
     val interBold = FontFamily(Font(R.font.inter_bold))
