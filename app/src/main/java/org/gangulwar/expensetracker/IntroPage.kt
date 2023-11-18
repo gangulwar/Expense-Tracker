@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 val interFamily = FontFamily(
     Font(R.font.inter_bold, FontWeight.Bold),
@@ -42,7 +44,7 @@ val jostFamily = FontFamily(
 )
 
 @Composable
-fun IntroPage() {
+fun IntroPage(navController: NavController) {
 
 
     val interBold = FontFamily(Font(R.font.inter_bold))
@@ -106,7 +108,9 @@ fun IntroPage() {
             )
 
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                          navController.navigate(Screen.Login.route)
+                },
                 modifier = Modifier
                     .width(175.dp)
                     .height(60.dp),
@@ -131,5 +135,5 @@ fun IntroPage() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun Test() {
-    IntroPage()
+    IntroPage(rememberNavController())
 }

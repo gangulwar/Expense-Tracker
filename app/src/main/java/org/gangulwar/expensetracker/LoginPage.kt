@@ -2,6 +2,7 @@ package org.gangulwar.expensetracker
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,10 +45,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginPage() {
+fun LoginPage(navController: NavController) {
 
     Column(
         modifier = Modifier
@@ -199,7 +202,11 @@ fun LoginPage() {
                     )
 
                     Text(
-                        modifier = Modifier.padding(start = 5.dp),
+                        modifier = Modifier
+                            .padding(start = 5.dp)
+                            .clickable {
+                                navController.navigate(Screen.SignUp.route)
+                            },
                         text = "Sign Up",
                         style = TextStyle(
                             color = colorResource(R.color.forgot_password),
@@ -245,5 +252,5 @@ fun InputTextField(
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun LoginPagePreview() {
-    LoginPage()
+    LoginPage(rememberNavController())
 }
