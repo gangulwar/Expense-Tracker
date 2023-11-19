@@ -1,5 +1,6 @@
 package org.gangulwar.expensetracker
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
@@ -59,6 +60,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
@@ -74,7 +79,8 @@ import java.time.temporal.ChronoUnit
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNavigationScreen(navController: NavController) {
+fun BottomNavigationScreen(navController: NavHostController) {
+
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.List,
@@ -87,6 +93,8 @@ fun BottomNavigationScreen(navController: NavController) {
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
+    val viewModelStore = remember { ViewModelStore() }
 
     Scaffold(
 
@@ -218,31 +226,53 @@ fun BottomNavigationScreen(navController: NavController) {
 
 
     ) { innerPadding ->
-        NavHost(
-            navController = navController as NavHostController,
-            startDestination = BottomNavItem.Home.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(BottomNavItem.Home.route) {
-                HomeScreen()
-            }
-            composable(BottomNavItem.List.route) {
-                ListScreen()
-            }
-            composable(BottomNavItem.Stats.route) {
-                StatsScreen()
-            }
+        HomeScreen()
+        val modifier = Modifier.padding(innerPadding)
+//        NavHost(navController, startDestination = BottomNavItem.Home.route, modifier = modifier) {
+//            composable(BottomNavItem.Home.route) {
+//                HomeScreen()
+//            }
+//            composable(BottomNavItem.List.route) {
+//                ListScreen()
+//            }
+//            composable(BottomNavItem.Stats.route) {
+//                StatsScreen()
+//            }
+//
+//            composable(BottomNavItem.Profile.route) {
+//                ProfileScreen()
+//            }
+//        }
 
-            composable(BottomNavItem.Profile.route) {
-                ProfileScreen()
-            }
-
-            composable(BottomNavItem.NewExpense.route) {
-                NewExpenseScreen()
-            }
-
-        }
     }
+//    { innerPadding ->
+//        NavHost(
+////            navController = navController as NavHostController,
+//            navController = rememberNavController(),
+//            startDestination = BottomNavItem.Home.route,
+//            modifier = Modifier.padding(innerPadding)
+//        ) {
+//            composable(BottomNavItem.Home.route) {
+//                HomeScreen()
+//            }
+//            composable(BottomNavItem.List.route) {
+//                ListScreen()
+//            }
+//            composable(BottomNavItem.Stats.route) {
+//                StatsScreen()
+//            }
+//
+//            composable(BottomNavItem.Profile.route) {
+//                ProfileScreen()
+//            }
+//
+//            composable(BottomNavItem.NewExpense.route) {
+//                NewExpenseScreen()
+//            }
+//
+//        }
+//    }
+
 }
 
 sealed class BottomNavItem(
@@ -251,7 +281,9 @@ sealed class BottomNavItem(
     val icon: Int,
     val selectedIcon: Int
 ) {
-    object Home : BottomNavItem("home", "Home", R.drawable.nav_home_des, R.drawable.nav_home_sel)
+    object Home :
+        BottomNavItem("home", "Home", R.drawable.nav_home_des, R.drawable.nav_home_sel)
+
     object List :
         BottomNavItem("favorites", "List", R.drawable.nav_list_des, R.drawable.nav_list_sel)
 
@@ -266,7 +298,12 @@ sealed class BottomNavItem(
     )
 
     object NewExpense :
-        BottomNavItem("newExpense", "New Expense", R.drawable.new_expense, R.drawable.new_expense)
+        BottomNavItem(
+            "newExpense",
+            "New Expense",
+            R.drawable.new_expense,
+            R.drawable.new_expense
+        )
 
 }
 
@@ -462,7 +499,9 @@ fun formatDateTime(dateTime: LocalDateTime): String {
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
 
     return when {
-        dateTime.toLocalDate().isEqual(now.toLocalDate()) -> "Today, ${dateTime.format(formatter)}"
+        dateTime.toLocalDate()
+            .isEqual(now.toLocalDate()) -> "Today, ${dateTime.format(formatter)}"
+
         dateTime.toLocalDate()
             .isEqual(now.toLocalDate().minus(1, ChronoUnit.DAYS)) -> "Yesterday, ${
             dateTime.format(

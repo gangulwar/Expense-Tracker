@@ -5,8 +5,10 @@ import android.os.Build
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.annotation.RequiresApi
+import kotlinx.coroutines.CoroutineScope
 import org.gangulwar.expensetracker.modal.TransactionModal
 import java.time.LocalDateTime
+import kotlin.coroutines.CoroutineContext
 
 class ApiRepository {
 
@@ -257,6 +259,10 @@ class ApiRepository {
 
         fun newExpense(context: Context) {
             Toast.makeText(context, "Expense Added Successfully", LENGTH_SHORT).show()
+        }
+
+        fun login(username: String, password: String):Boolean {
+            return username == "username" && password=="password"
         }
     }
 }

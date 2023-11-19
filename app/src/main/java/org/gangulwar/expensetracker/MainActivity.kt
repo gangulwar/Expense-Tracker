@@ -20,6 +20,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import org.gangulwar.expensetracker.navigation.mainScreenNavGraph
 import org.gangulwar.expensetracker.ui.theme.ExpenseTrackerTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,6 +43,7 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavGraphSetup(navController: NavHostController) {
+    val navControllerScaffold= rememberNavController()
     NavHost(
         navController = navController,
         startDestination = Screen.Intro.route
@@ -61,14 +63,19 @@ fun NavGraphSetup(navController: NavHostController) {
         composable(
             route=Screen.SignUp.route
         ){
-            CreateAccountPage()
+            CreateAccountPage(navController)
         }
 
         composable(
             route=Screen.Home.route
         ){
-            HomeScreen()
+            BottomNavigationScreen(navController)
         }
+
+        composable("mainScreen"){
+            BottomNavigationScreen(navController = navControllerScaffold)
+        }
+        //mainScreenNavGraph(navController)
     }
 }
 
