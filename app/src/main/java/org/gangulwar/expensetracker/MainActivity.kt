@@ -20,7 +20,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import org.gangulwar.expensetracker.navigation.mainScreenNavGraph
+import org.gangulwar.expensetracker.navigation.RootNavigationGraph
+import org.gangulwar.expensetracker.navigation.Screen
 import org.gangulwar.expensetracker.ui.theme.ExpenseTrackerTheme
 
 class MainActivity : ComponentActivity() {
@@ -32,9 +33,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ExpenseTrackerTheme {
-                navController = rememberNavController()
-                NavGraphSetup(navController = navController)
-
+                RootNavigationGraph(navController = rememberNavController())
             }
         }
     }
@@ -66,18 +65,24 @@ fun NavGraphSetup(navController: NavHostController) {
             CreateAccountPage(navController)
         }
 
-        composable(
-            route=Screen.Home.route
-        ){
-            BottomNavigationScreen(navController)
-        }
 
-        composable("mainScreen"){
-            BottomNavigationScreen(navController = navControllerScaffold)
-        }
-        //mainScreenNavGraph(navController)
+
+
+//        composable(
+//            route=Screen.Home.route
+//        ){
+//            BottomNavigationScreen(navController)
+//        }
+//
+//        composable("mainScreen"){
+//            BottomNavigationScreen(navController = navControllerScaffold)
+//        }
+//        //mainScreenNavGraph(navController)
+//
+//        mainScreenNavGraph(navController)
     }
 }
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {

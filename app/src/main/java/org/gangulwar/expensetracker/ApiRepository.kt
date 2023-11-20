@@ -171,7 +171,7 @@ class ApiRepository {
         fun getExpenseList(): List<TransactionModal> {
             val transaction11 = TransactionModal(
                 LocalDateTime.parse("2023-11-11T08:45"),
-                80.0,
+                800.0,
                 "Grocery shopping",
                 "Grocery",
                 false
@@ -250,8 +250,8 @@ class ApiRepository {
             )
 
             val transactionList: List<TransactionModal> = listOf(
-                transaction11, transaction12, transaction13, transaction14, transaction15,
-                transaction16, transaction17, transaction18, transaction19, transaction20
+                transaction16, transaction17, transaction18, transaction19, transaction20,
+                transaction11, transaction12, transaction13, transaction14, transaction15
             )
 
             return transactionList

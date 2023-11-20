@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import org.gangulwar.expensetracker.navigation.Screen
 
 val interFamily = FontFamily(
     Font(R.font.inter_bold, FontWeight.Bold),

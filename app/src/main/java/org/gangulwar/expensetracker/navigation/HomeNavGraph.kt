@@ -2,9 +2,10 @@ package org.gangulwar.expensetracker.navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.navigation.NavController
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import org.gangulwar.expensetracker.BottomNavItem
@@ -15,29 +16,28 @@ import org.gangulwar.expensetracker.ProfileScreen
 import org.gangulwar.expensetracker.StatsScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun NavGraphBuilder.mainScreenNavGraph(
-    navController: NavHostController
-) {
-    navigation(
-        startDestination = BottomNavItem.Home.route,
-        route = "mainScreenRoute"
+@Composable
+fun HomeNavGraph(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        route = Graph.HOME,
+        startDestination = BottomNavItem.Home.route
     ) {
-        composable(BottomNavItem.Home.route) {
+        composable(route = BottomNavItem.Home.route) {
             HomeScreen()
         }
-        composable(BottomNavItem.List.route) {
-            ListScreen()
-        }
-        composable(BottomNavItem.Stats.route) {
-            StatsScreen()
-        }
-
-        composable(BottomNavItem.Profile.route) {
+        composable(route = BottomNavItem.Profile.route) {
             ProfileScreen()
         }
-
-        composable(BottomNavItem.NewExpense.route) {
+        composable(route = BottomNavItem.List.route) {
+           ListScreen()
+        }
+        composable(route = BottomNavItem.Stats.route) {
+            StatsScreen()
+        }
+        composable(route = BottomNavItem.NewExpense.route) {
             NewExpenseScreen()
         }
+        //detailsNavGraph(navController = navController)
     }
 }

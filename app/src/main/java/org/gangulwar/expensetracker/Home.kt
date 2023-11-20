@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.nestedscroll.nestedScrollModifierNode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.modifier.modifierLocalMapOf
 import androidx.compose.ui.res.colorResource
@@ -69,6 +70,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import org.gangulwar.expensetracker.BottomNavItem.Home.name
 import org.gangulwar.expensetracker.modal.TransactionModal
+import org.gangulwar.expensetracker.navigation.HomeNavGraph
 import org.gangulwar.expensetracker.ui.theme.ExpenseTrackerTheme
 import java.nio.file.WatchEvent
 import java.time.LocalDateTime
@@ -79,7 +81,7 @@ import java.time.temporal.ChronoUnit
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNavigationScreen(navController: NavHostController) {
+fun BottomNavigationScreen(navController: NavHostController = rememberNavController()) {
 
     val items = listOf(
         BottomNavItem.Home,
@@ -97,7 +99,6 @@ fun BottomNavigationScreen(navController: NavHostController) {
     val viewModelStore = remember { ViewModelStore() }
 
     Scaffold(
-
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection),
 
@@ -114,7 +115,7 @@ fun BottomNavigationScreen(navController: NavHostController) {
             TopAppBar(
                 modifier = Modifier.height(100.dp),
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = colorResource(id = R.color.main_bg),
+                    containerColor = colorResource(id = if (selected != 1) R.color.main_bg else R.color.card),
                     titleContentColor = Color.Transparent,
                 ),
                 title = {
@@ -126,7 +127,7 @@ fun BottomNavigationScreen(navController: NavHostController) {
                     ) {
                         Text(
                             text = "Good Morning", style = TextStyle(
-                                color = Color.White,
+                                color = if (selected != 1) Color.White else Color.Black,
                                 fontSize = 15.sp,
                                 fontFamily = interFamily,
                                 fontWeight = FontWeight.Medium
@@ -135,7 +136,7 @@ fun BottomNavigationScreen(navController: NavHostController) {
                         Text(
                             modifier = Modifier.padding(top = 5.dp),
                             text = "Aarsh Gangulwar", style = TextStyle(
-                                color = Color.White,
+                                color = if (selected != 1) Color.White else Color.Black,
                                 fontSize = 25.sp,
                                 fontFamily = jostFamily,
                                 fontWeight = FontWeight.SemiBold
@@ -225,54 +226,45 @@ fun BottomNavigationScreen(navController: NavHostController) {
         }
 
 
-    ) { innerPadding ->
-        HomeScreen()
-        val modifier = Modifier.padding(innerPadding)
-//        NavHost(navController, startDestination = BottomNavItem.Home.route, modifier = modifier) {
-//            composable(BottomNavItem.Home.route) {
-//                HomeScreen()
-//            }
-//            composable(BottomNavItem.List.route) {
-//                ListScreen()
-//            }
-//            composable(BottomNavItem.Stats.route) {
-//                StatsScreen()
-//            }
-//
-//            composable(BottomNavItem.Profile.route) {
-//                ProfileScreen()
-//            }
-//        }
+    ) {
+        val modifier = it
+        Column(
+            modifier = Modifier.fillMaxSize()
+                .padding(modifier)
+//                .verticalScroll(rememberScrollState())
+        ) {
+            HomeNavGraph(navController = navController)
+            /*
+    { innerPadding ->
+        NavHost(
+//            navController = navController as NavHostController,
+            navController = rememberNavController(),
+            startDestination = BottomNavItem.Home.route,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(BottomNavItem.Home.route) {
+                HomeScreen()
+            }
+            composable(BottomNavItem.List.route) {
+                ListScreen()
+            }
+            composable(BottomNavItem.Stats.route) {
+                StatsScreen()
+            }
 
+            composable(BottomNavItem.Profile.route) {
+                ProfileScreen()
+            }
+
+            composable(BottomNavItem.NewExpense.route) {
+                NewExpenseScreen()
+            }
+
+        }
     }
-//    { innerPadding ->
-//        NavHost(
-////            navController = navController as NavHostController,
-//            navController = rememberNavController(),
-//            startDestination = BottomNavItem.Home.route,
-//            modifier = Modifier.padding(innerPadding)
-//        ) {
-//            composable(BottomNavItem.Home.route) {
-//                HomeScreen()
-//            }
-//            composable(BottomNavItem.List.route) {
-//                ListScreen()
-//            }
-//            composable(BottomNavItem.Stats.route) {
-//                StatsScreen()
-//            }
-//
-//            composable(BottomNavItem.Profile.route) {
-//                ProfileScreen()
-//            }
-//
-//            composable(BottomNavItem.NewExpense.route) {
-//                NewExpenseScreen()
-//            }
-//
-//        }
-//    }
-
+*/
+        }
+    }
 }
 
 sealed class BottomNavItem(
@@ -314,7 +306,9 @@ fun HomeScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(R.color.main_bg))
+            .verticalScroll(rememberScrollState())
     ) {
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -400,7 +394,14 @@ fun HomeScreen() {
                     )
                 )
 
-                val list = ApiRepository.getRecentsIncomeList()
+                var list: List<TransactionModal>? = null
+
+                if (isIncomeChecked) {
+                    list = ApiRepository.getIncomeList()
+                } else {
+                    list = ApiRepository.getExpenseList()
+                }
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -549,9 +550,9 @@ fun CustomToggleButton(
                     }
                 } else {
                     if (isIncomeChecked) {
-                        Color.Black
-                    } else {
                         Color.White
+                    } else {
+                        Color.Black
                     }
                 }
             )
@@ -614,9 +615,9 @@ fun CustomToggleButton(
                         Color.White
                     } else {
                         if (isIncomeChecked) {
-                            Color.Black
-                        } else {
                             Color.White
+                        } else {
+                            Color.Black
                         }
                     }
                 )
@@ -821,10 +822,10 @@ fun Main() {
 @Composable
 fun GreePreview() {
     ExpenseTrackerTheme {
-        //Main()
+        Main()
 //        SimpleBottomAppBar()
         //HomeScreen()
         // ListScreen()
-        NewExpenseScreen()
+        //NewExpenseScreen()
     }
 }

@@ -50,16 +50,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.currentComposer
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import org.gangulwar.expensetracker.navigation.Graph
+import org.gangulwar.expensetracker.navigation.Screen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginPage(navController: NavController) {
+fun LoginPage(navController: NavHostController) {
 
     val coroutineScope = rememberCoroutineScope()
+
     var username by remember { mutableStateOf(TextFieldValue("username")) }
     var password by remember { mutableStateOf(TextFieldValue("password")) }
     var loginResult by remember { mutableStateOf(false) }
@@ -171,25 +176,31 @@ fun LoginPage(navController: NavController) {
                     onClick = {
 //                        ApiRepository.login("temp","", coroutineScope)
 //                        navController.navigate(Screen.Home.route)
+                        /*
+                                                coroutineScope.launch(Dispatchers.IO) {
+                                                    // Simulate API request, replace with your actual API call
+                                                    delay(2000)
+                                                    loginResult = ApiRepository.login(
+                                                        username = username.text, password = password.text
+                                                    )
+                                                    // Replace with your API response logic
+                                                    withContext(Dispatchers.Main) {
+                                                        // Use withContext to switch back to the main thread before updating UI
+                        //                                handleLoginResult(apiResult, navController)
+                        //                                if (apiResult) {
+                        //                                    loginSuccessful(navController)
+                        //                                }
+                                                    }
 
-                        coroutineScope.launch(Dispatchers.IO) {
-                            // Simulate API request, replace with your actual API call
-                            delay(2000)
-                            loginResult = ApiRepository.login(
-                                username = username.text, password = password.text
-                            )
-                            // Replace with your API response logic
-                            withContext(Dispatchers.Main) {
-                                // Use withContext to switch back to the main thread before updating UI
-//                                handleLoginResult(apiResult, navController)
-//                                if (apiResult) {
-//                                    loginSuccessful(navController)
-//                                }
-                            }
 
 
+                                                }
+
+                                                      navController.navigate(Graph.HOME)
+                        */
+                        coroutineScope.launch {
+                            loginResult= ApiRepository.login(username.text, password.text)
                         }
-
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorResource(
@@ -252,19 +263,28 @@ fun LoginPage(navController: NavController) {
 
     if (loginResult) {
         loginSuccessful(navController = navController)
+        loginResult=false
     }
 }
 
 @Composable
-fun loginSuccessful(navController: NavController) {
+fun loginSuccessful(navController: NavHostController) {
     val context = LocalContext.current
     Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-    navController
-        .navigate("mainScreen") {
-            popUpTo("mainScreen"){
-                inclusive=true
-            }
+//    navController
+//        .navigate("mainScreenRoute") {
+//            popUpTo(navController.graph.findStartDestination().id)
+////                inclusive=true
+//            launchSingleTop=true
+//
+//        }
+//    navController.popBackStack()
+    navController.navigate(Graph.HOME){
+        popUpTo(BottomNavItem.Home.route){
+            inclusive=true
         }
+    }
+    println("Home Reached!")
 }
 
 
